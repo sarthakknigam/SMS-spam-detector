@@ -1,44 +1,87 @@
 import streamlit as st
 import pickle
 import string
-from nltk.corpus import stopwords
 import nltk
+from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# Download required NLTK data
+# -------------------- NLTK --------------------
 nltk.download("punkt")
 nltk.download("punkt_tab")
 nltk.download("stopwords")
 
 ps = PorterStemmer()
 
-# Page configuration
+# -------------------- Page Config --------------------
 st.set_page_config(
     page_title="SMS Spam Detector",
     page_icon="📩",
     layout="centered"
 )
 
-# Custom CSS
+# -------------------- CSS --------------------
 st.markdown("""
 <style>
-div.stButton > button {
-    width: 100%;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 18px;
-    border-radius: 10px;
-    padding: 10px;
+
+/* Main Background */
+.stApp{
+    background: linear-gradient(to bottom right,#eef5ff,#dbeafe);
 }
 
-textarea {
-    border-radius: 10px;
+/* Title */
+.main-title{
+    text-align:center;
+    font-size:42px;
+    font-weight:bold;
+    color:#1d4ed8;
 }
+
+.subtitle{
+    text-align:center;
+    color:#555;
+    font-size:18px;
+    margin-bottom:25px;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"]{
+    background:#f8fbff;
+}
+
+/* Text Area */
+textarea{
+    border-radius:12px !important;
+    border:2px solid #3b82f6 !important;
+}
+
+/* Button */
+div.stButton > button{
+    width:100%;
+    background:linear-gradient(90deg,#2563eb,#1d4ed8);
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+div.stButton > button:hover{
+    background:linear-gradient(90deg,#1d4ed8,#1e40af);
+}
+
+/* Footer */
+.footer{
+    text-align:center;
+    color:gray;
+    margin-top:40px;
+    font-size:14px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-
-# Text preprocessing
+# -------------------- Text Preprocessing --------------------
 def transform_text(text):
     text = text.lower()
     text = nltk.word_tokenize(text)
@@ -53,7 +96,7 @@ def transform_text(text):
     y.clear()
 
     for i in text:
-        if i not in stopwords.words('english') and i not in string.punctuation:
+        if i not in stopwords.words("english") and i not in string.punctuation:
             y.append(i)
 
     text = y[:]
@@ -64,49 +107,89 @@ def transform_text(text):
 
     return " ".join(y)
 
+# -------------------- Load Model --------------------
+tfidf = pickle.load(open("vectorizer.pkl", "rb"))
+model = pickle.load(open("model.pkl", "rb"))
 
-# Load model
-tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
-model = pickle.load(open('model.pkl', 'rb'))
-
-# Sidebar
+# -------------------- Sidebar --------------------
 with st.sidebar:
-    st.header("📌 About")
-    st.write("""
-**Developer:** Sarthak Nigam
 
-**Model:** Multinomial Naive Bayes
+    st.title("📌 Project Details")
 
-**Vectorizer:** TF-IDF
+    st.markdown("""
+### 🧠 Model
+- Multinomial Naive Bayes
 
-Built with **Python**, **NLTK**, **Scikit-learn**, and **Streamlit**.
+### 🔍 Feature Extraction
+- TF-IDF Vectorizer
+
+### 🛠 Tech Stack
+- Python
+- Streamlit
+- Scikit-learn
+- NLTK
+
+---
+
+Developed by **Sarthak Nigam**
 """)
 
-# Main page
-st.title("📩 SMS Spam Detector")
-
-st.write(
-    "Enter an SMS message below to check whether it is **Spam** or **Ham**."
+# -------------------- Header --------------------
+st.markdown(
+    '<div class="main-title">📩 SMS Spam Detector</div>',
+    unsafe_allow_html=True
 )
 
-input_sms = st.text_area("✉️ Enter your message")
+st.markdown(
+    '<div class="subtitle">Machine Learning powered Spam Classification using NLP</div>',
+    unsafe_allow_html=True
+)
 
-# Prediction
+# -------------------- Input --------------------
+input_sms = st.text_area(
+    "✉️ Enter your SMS Message",
+    placeholder="Example: Congratulations! You have won ₹50,000. Click the link to claim..."
+)
+
+# -------------------- Prediction --------------------
 if st.button("🚀 Predict"):
 
-    with st.spinner("Analyzing message..."):
-
-        transformed_sms = transform_text(input_sms)
-
-        vector_input = tfidf.transform([transformed_sms])
-
-        result = model.predict(vector_input)[0]
-
-    if result == 1:
-        st.error("🚨 Spam Message Detected")
+    if input_sms.strip() == "":
+        st.warning("Please enter a message.")
     else:
-        st.success("✅ This is a Ham Message")
 
-# Footer
+        with st.spinner("Analyzing message..."):
+
+            transformed_sms = transform_text(input_sms)
+
+            vector_input = tfidf.transform([transformed_sms])
+
+            result = model.predict(vector_input)[0]
+
+            probability = model.predict_proba(vector_input)
+
+            confidence = probability.max() * 100
+
+        st.markdown("---")
+
+        if result == 1:
+
+            st.error("🚨 Spam Message Detected")
+
+        else:
+
+            st.success("✅ This is a Ham Message")
+
+        st.write("### Prediction Confidence")
+
+        st.progress(int(confidence))
+
+        st.write(f"**{confidence:.2f}% Confidence**")
+
+# -------------------- Footer --------------------
 st.markdown("---")
-st.caption("Built with ❤️ by Sarthak Nigam")
+
+st.markdown(
+    '<div class="footer">SMS Spam Detector | Built with Python, Streamlit & Scikit-learn</div>',
+    unsafe_allow_html=True
+)
