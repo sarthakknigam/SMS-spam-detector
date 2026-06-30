@@ -19,7 +19,7 @@ Features--
 - NumPy
 - NLTK
 - Pickle
-
+APP LINK-https://sms-spam-detector-sfeav3frl7wxm28rfypfr7.streamlit.app/
 Project Structure
 
 ```
