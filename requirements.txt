@@ -1,15 +1,6 @@
- 📦 Requirements
-
-- Python 3.x
-- Streamlit
-- Scikit-learn
-- Pandas
-- NumPy
-- NLTK
-
-Install all dependencies using:
-
-```bash
-pip install -r requirements.txt
-```
-
+Requirements--
+streamlit
+scikit-learn
+pandas
+numpy
+nltk
