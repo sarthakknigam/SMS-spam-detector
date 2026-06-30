@@ -5,42 +5,73 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# -------------------- NLTK --------------------
-nltk.download("punkt")
-nltk.download("punkt_tab")
-nltk.download("stopwords")
+# -------------------- Download NLTK Data --------------------
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt")
+    nltk.download("punkt_tab")
+
+try:
+    nltk.data.find("corpora/stopwords")
+except LookupError:
+    nltk.download("stopwords")
 
 ps = PorterStemmer()
 
-# -------------------- Page Config --------------------
+# -------------------- Page Configuration --------------------
 st.set_page_config(
     page_title="SMS Spam Detector",
     page_icon="📩",
     layout="centered"
 )
 
-# -------------------- CSS --------------------
+# -------------------- Custom CSS --------------------
 st.markdown("""
 <style>
 
-/* Main Background */
+/* Background */
 .stApp{
-    background: linear-gradient(to bottom right,#eef5ff,#dbeafe);
+    background: linear-gradient(135deg,#eef5ff,#dbeafe);
 }
 
-/* Title */
+/* Main Title */
 .main-title{
     text-align:center;
-    font-size:42px;
-    font-weight:bold;
-    color:#1d4ed8;
+    font-size:44px;
+    font-weight:700;
+    color:#1e3a8a;
+    margin-bottom:5px;
 }
 
+/* Subtitle */
 .subtitle{
     text-align:center;
-    color:#555;
+    color:#4b5563;
     font-size:18px;
-    margin-bottom:25px;
+    margin-bottom:30px;
+}
+
+/* Text Area */
+textarea{
+    border-radius:12px !important;
+    border:2px solid #2563eb !important;
+}
+
+/* Button */
+div.stButton > button{
+    width:100%;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+    padding:12px;
+}
+
+div.stButton > button:hover{
+    background:#1d4ed8;
 }
 
 /* Sidebar */
@@ -48,34 +79,12 @@ section[data-testid="stSidebar"]{
     background:#f8fbff;
 }
 
-/* Text Area */
-textarea{
-    border-radius:12px !important;
-    border:2px solid #3b82f6 !important;
-}
-
-/* Button */
-div.stButton > button{
-    width:100%;
-    background:linear-gradient(90deg,#2563eb,#1d4ed8);
-    color:white;
-    border:none;
-    border-radius:12px;
-    padding:14px;
-    font-size:18px;
-    font-weight:bold;
-}
-
-div.stButton > button:hover{
-    background:linear-gradient(90deg,#1d4ed8,#1e40af);
-}
-
 /* Footer */
 .footer{
     text-align:center;
-    color:gray;
-    margin-top:40px;
+    color:#6b7280;
     font-size:14px;
+    margin-top:30px;
 }
 
 </style>
@@ -117,21 +126,23 @@ with st.sidebar:
     st.title("📌 Project Details")
 
     st.markdown("""
-### 🧠 Model
+### 🧠 Machine Learning Model
 - Multinomial Naive Bayes
 
-### 🔍 Feature Extraction
-- TF-IDF Vectorizer
+### 🔍 NLP Technique
+- TF-IDF Vectorization
 
-### 🛠 Tech Stack
+### 💻 Tech Stack
 - Python
 - Streamlit
-- Scikit-learn
 - NLTK
+- Scikit-learn
 
 ---
 
-Developed by **Sarthak Nigam**
+Developed by
+
+**Sarthak Nigam**
 """)
 
 # -------------------- Header --------------------
@@ -141,21 +152,21 @@ st.markdown(
 )
 
 st.markdown(
-    '<div class="subtitle">Machine Learning powered Spam Classification using NLP</div>',
+    '<div class="subtitle">Detect Spam & Ham Messages using Machine Learning and Natural Language Processing</div>',
     unsafe_allow_html=True
 )
 
 # -------------------- Input --------------------
 input_sms = st.text_area(
     "✉️ Enter your SMS Message",
-    placeholder="Example: Congratulations! You have won ₹50,000. Click the link to claim..."
+    placeholder="Type or paste your SMS here..."
 )
 
 # -------------------- Prediction --------------------
 if st.button("🚀 Predict"):
 
     if input_sms.strip() == "":
-        st.warning("Please enter a message.")
+        st.warning("⚠️ Please enter a message.")
     else:
 
         with st.spinner("Analyzing message..."):
@@ -166,30 +177,19 @@ if st.button("🚀 Predict"):
 
             result = model.predict(vector_input)[0]
 
-            probability = model.predict_proba(vector_input)
-
-            confidence = probability.max() * 100
-
         st.markdown("---")
 
         if result == 1:
-
             st.error("🚨 Spam Message Detected")
-
+            st.write("This message appears to be **spam**. Be cautious before responding or clicking any links.")
         else:
-
-            st.success("✅ This is a Ham Message")
-
-        st.write("### Prediction Confidence")
-
-        st.progress(int(confidence))
-
-        st.write(f"**{confidence:.2f}% Confidence**")
+            st.success("✅ Ham Message")
+            st.write("This message appears to be **legitimate** and does not exhibit common spam characteristics.")
 
 # -------------------- Footer --------------------
 st.markdown("---")
 
 st.markdown(
-    '<div class="footer">SMS Spam Detector | Built with Python, Streamlit & Scikit-learn</div>',
+    '<div class="footer">SMS Spam Detector | Built using Python, Streamlit, Scikit-learn & NLTK</div>',
     unsafe_allow_html=True
 )
